@@ -125,7 +125,7 @@ resource "aws_iam_policy" "lambda_logs" {
                 Action = [
                     "logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"
                 ]
-                Resource = "arn:aws:log:*:*:*"
+                Resource = "arn:aws:logs:*:*:*"
             }
         ]
     })
@@ -147,5 +147,28 @@ resource "aws_iam_role_policy_attachment" "lambda_managed" {
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
     role = aws_iam_role.lambda_service_role.name
     policy_arn = aws_iam_policy.lambda_logs.arn 
+}
+
+
+# Permission lambda for S3 
+resource "aws_lambda_permission" "allow_s3" {
+    statement_id = "AllowExecutionFromS3"
+    action = "lambda:InvokeFunction"
+    function_name = aws_lambda_function.bronze_to_silver.arn
+    principal = "s3.amazonaws.com"
+    source_arn = aws_s3_bucket.test_bucket.arn
+}
+
+# Déclenchement de la fonction lambda_handler à partir du dossier bronze 
+resource "aws_s3_bucket_notification" "bronze_notify"{
+    bucket = aws_s3_bucket.test_bucket.id
+    
+    lambda_function {
+        lambda_function_arn = aws_lambda_function.bronze_to_silver.arn
+        events = ["s3:ObjectCreated:*"] 
+        filter_prefix = "bronze/"
+    }
+
+    depends_on = [aws_lambda_permission.allow_s3]
 }
 
