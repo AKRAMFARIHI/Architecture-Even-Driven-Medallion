@@ -29,7 +29,7 @@ def lambda_handler(event, context):
         raw_data = response['Body'].read()
 
         contenu_txt = decompresse_file_zip(raw_data)
-        lignes = contenu_txt.splitlines()
+        lignes = contenu_txt.splitlines()[:51]
         colonne_ligne = lignes[0]
         new_colonnes = []
         for colonne in colonne_ligne.split('|'):
@@ -37,9 +37,6 @@ def lambda_handler(event, context):
             new_colonnes.append(new_colonne)
 
         print(new_colonnes)
-        print("la taille est : ", len(lignes))
-        print("la ligne 1 : ", lignes[1])
-        print("la lignes 2: ", lignes[2])
         df = force_data_type(lignes, new_colonnes)
         print(df.head())
         print("data types are changed !")
@@ -61,7 +58,12 @@ def lambda_handler(event, context):
         'body' : "Upload to silver succes !"
     }
 
-
+# Décompresser les fichiers zip 
+def decompresse_file_zip(raw_data):
+    with zipfile.ZipFile(io.BytesIO(raw_data)) as z:
+        with z.open(z.namelist()[0]) as f:
+            df = pd.read_csv(f, sep='|', dtype=str)
+    return df
 # Organiser les entêtes des colonnes
 def snake_case(colonne):
     # Pour gérer les accents 
