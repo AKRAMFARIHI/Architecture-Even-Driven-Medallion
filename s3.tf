@@ -1,4 +1,15 @@
-# Bucket de test 
-resource "aws_s3_bucket" "test_bucket" {
-    bucket = "evaluation-test-bucket"
+
+# Bucket bronze
+resource "aws_s3_bucket" "bucket_bronze" {
+    bucket = "evaluation-bucket-bronze"
+}
+
+# Bucker silver
+resource "aws_s3_bucket" "bucket_silver" {
+    bucket = "evaluation-bucket-silver"
+}
+
+# Bucker gold 
+resource "aws_s3_bucket" "bucket_gold" {
+    bucket = "evaluation-bucket-gold"
 }
